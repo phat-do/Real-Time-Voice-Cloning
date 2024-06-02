@@ -15,12 +15,13 @@ from synthesizer.inference import Synthesizer
 from utils.argutils import print_args
 from utils.default_models import ensure_default_models
 from vocoder import inference as vocoder
+from IPython.display import Audio
 
 def voice_clone(embed,
                 synthesizer_path="saved_models/default/synthesizer.pt",
                 vocoder_path="saved_models/default/vocoder.pt",
                 cpu=False,
-				no_sound=False):
+		no_sound=False):
 
     ## Load the models one by one.
     ensure_default_models(Path("saved_models"))
@@ -41,19 +42,14 @@ def voice_clone(embed,
 
             # Play the audio (non-blocking)
             if not no_sound:
-                import sounddevice as sd
-                try:
-                    sd.stop()
-                    sd.play(generated_wav, synthesizer.sample_rate)
-                except sd.PortAudioError as e:
+                try: display(Audio(generated_wav, rate=synthesizer.sample_rate))
+                except:
                     print("\nCaught exception: %s" % repr(e))
                     print("Continuing without audio playback. Suppress this message with the \"--no_sound\" flag.\n")
-                except:
-                    raise
 
             # Save it on the disk
             filename = "demo_output_%02d.wav" % num_generated
-            print(generated_wav.dtype)
+            # print(generated_wav.dtype)
             sf.write(filename, generated_wav.astype(np.float32), synthesizer.sample_rate)
             num_generated += 1
             print("\nSaved output as %s\n\n" % filename)
